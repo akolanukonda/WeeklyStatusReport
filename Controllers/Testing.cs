@@ -58,7 +58,7 @@ namespace WeeklyStatusReport.Controllers
 
 
                 // Add header part
-                string headerimagepath = @"C:\Users\akolanukonda\Downloads\DELTA.png";
+                string headerimagepath = @"Images/DeltaHeader.png";
                 HeaderPart headerPart = mainPart.AddNewPart<HeaderPart>();
                 string headerPartId = mainPart.GetIdOfPart(headerPart);
                 Header header = new Header();
@@ -127,7 +127,7 @@ namespace WeeklyStatusReport.Controllers
                 headerPart.Header = header;
 
                 // Add footer part
-                string footerimagepath = @"C:\Users\akolanukonda\Downloads\DeltaFooterImage.png";
+                string footerimagepath = @"Images/DeltaFooter.png";
                 FooterPart footerPart = mainPart.AddNewPart<FooterPart>();
                 string footerPartId = mainPart.GetIdOfPart(footerPart);
 
