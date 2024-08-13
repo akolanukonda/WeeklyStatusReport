@@ -27,24 +27,23 @@ namespace WeeklyStatusReport.Controllers
             if (ViewBag.SelectedTeam == "Cloud Sailors" && CloudSailors == "NotDone")
                 return View("~/Views/CloudSailors/WSRForm.cshtml");
             else if (ViewBag.SelectedTeam == "Digital" )
-                return View("~/Views/CloudSailors/WSRForm.cshtml");
+                return View("~/Views/Testing/GenerateWSRDgital.cshtml");
             else if (ViewBag.SelectedTeam == "Tibco")
-                return View("~/Views/CloudSailors/WSRForm.cshtml");
+                return View("~/Views/Testing/GenerateWSRTibco.cshtml");
             else if (ViewBag.SelectedTeam == "Digital - L3")
-                return View("~/Views/CloudSailors/WSRForm.cshtml");
+                return View("~/Views/Testing/GenerateWSRDigitalL3.cshtml");
             else if (ViewBag.SelectedTeam == "Power Platform")
-                return View("~/Views/CloudSailors/WSRForm.cshtml");
+                return View("~/Views/Testing/GenerateWSRPowerPlatform.cshtml");
             else if (ViewBag.SelectedTeam == "GIS")
-                return View("~/Views/CloudSailors/WSRForm.cshtml");
+                return View("~/Views/Testing/GenerateWSRGis.cshtml");
             else if (ViewBag.SelectedTeam == "CA PPM")
-                return View("~/Views/CloudSailors/WSRForm.cshtml");
+                return View("~/Views/Testing/GenerateWSRCappm.cshtml");
             else if (ViewBag.SelectedTeam == "Digital Support" && DigitalSupport == "NotDone")
                 return View("~/Views/DigitalSupport/WSRForm.cshtml");
             else
             {
                 TempData["AlertMessage"] = "This team has already filled the WSR.";
                 return View("~/Views/AlertView.cshtml");
-                //return View("~/Views/AlertView.cshtml");
             }
                 
         }
@@ -356,7 +355,7 @@ namespace WeeklyStatusReport.Controllers
                         var paragraphs = body.Descendants<Paragraph>();
                         foreach (var paragraph in paragraphs)
                         {
-                            if (paragraph.InnerText.Contains("WSR of Cloud Sailors Team"))
+                            if (paragraph.InnerText.Contains($"WSR of {model.TeamName} Team"))
                             {
                                 OpenXmlElement nextElement = paragraph.NextSibling();
 
@@ -449,7 +448,7 @@ namespace WeeklyStatusReport.Controllers
             // Add data row
             var dataRow = new TableRow();
             dataRow.Append(
-                CreateTableCell((string)TempData["Team"]),
+                CreateTableCell((string)model.TeamName),
                 CreateTestCell(formtext1),
                 CreateTableCell(ViewBag.Status ?? "N/A"),
                 CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
@@ -527,7 +526,7 @@ namespace WeeklyStatusReport.Controllers
             // Add data row
             var dataRow = new TableRow();
             dataRow.Append(
-                CreateTableCell((string)TempData["Team"]),
+                CreateTableCell((string)model.TeamName),
                 CreateTestCell(formtext1),
                 CreateTableCell(ViewBag.Status ?? "N/A"),
                 CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
@@ -632,8 +631,10 @@ namespace WeeklyStatusReport.Controllers
             return cell;
         }
 
+
+
         //Generate Digital WSR
-        public IActionResult GenerateWSRForDigitalTeamAura(CloudSailorsTeam model)
+        public IActionResult GenerateWSRDigital(DigitalTeam model)
         {
             // Create a new MemoryStream for each request to avoid conflicts
             using (var documentStream = new MemoryStream())
@@ -666,7 +667,7 @@ namespace WeeklyStatusReport.Controllers
                     var paragraphs = body.Descendants<Paragraph>();
                     foreach (var paragraph in paragraphs)
                     {
-                        if (paragraph.InnerText.Contains("WSR of Cloud Sailors Team"))
+                        if (paragraph.InnerText.Contains($"WSR of Digital - {model.SubTeamName} Team"))
                         {
                             OpenXmlElement nextElement = paragraph.NextSibling();
 
@@ -677,7 +678,7 @@ namespace WeeklyStatusReport.Controllers
                                 table.Remove();
                             }
                             TableExists = true;
-                            AppendCloudSailorsTable(body, paragraph, model, document.MainDocumentPart);
+                            AppendDigitalTable(body, paragraph, model, document.MainDocumentPart);
                             break; // Exit after inserting the table
                         }
                     }
@@ -685,7 +686,7 @@ namespace WeeklyStatusReport.Controllers
                     // Append new content to the document
                     if (!TableExists)
                     {
-                        AppendCloudSailorsTable(body, model, document.MainDocumentPart,"");
+                        AppendDigitalTable(body, model, document.MainDocumentPart, model.SubTeamName);
                     }
                     //CloudSailors = "Done";
 
@@ -703,6 +704,1355 @@ namespace WeeklyStatusReport.Controllers
             }
 
         }
+
+        private void AppendDigitalTable(Body body, Paragraph paragraph, DigitalTeam model, MainDocumentPart mainPart)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            //No need to add heading again
+            /*// Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text("WSR of Cloud Sailors Team")));
+            body.AppendChild(tableHeading);*/
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)model.SubTeamName),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            /*// Append the paragraph to the document body
+            body.AppendChild(table);*/
+            paragraph.InsertAfterSelf(table);
+
+
+            //No PageBreak necessary here
+        }
+        private void AppendDigitalTable(Body body,DigitalTeam model, MainDocumentPart mainPart, string heading)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            // Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text($"WSR of Digital - {heading} Team")));
+            body.AppendChild(tableHeading);
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)model.SubTeamName),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            // Append the paragraph to the document body
+            body.AppendChild(table);
+
+
+
+            // Insert the page break
+            Paragraph paraPageBreak = body.AppendChild(new Paragraph());
+            Run runPageBreak = paraPageBreak.AppendChild(new Run());
+            runPageBreak.AppendChild(new Break() { Type = BreakValues.Page });
+        }
+
+
+
+        // Generate WSR for TIBCO
+
+        public IActionResult GenerateWSRTibco(Tibco model)
+        {
+            // Create a new MemoryStream for each request to avoid conflicts
+            using (var documentStream = new MemoryStream())
+            {
+                // Create a new document if it doesn't exist
+                if (!HttpContext.Session.TryGetValue(DocumentKey, out var existingDocumentBytes))
+                {
+                    // Create a new document and store it in session
+                    CreateNewDocument(documentStream);
+                    HttpContext.Session.Set(DocumentKey, documentStream.ToArray());
+                }
+                else
+                {
+                    // Load existing document from session
+                    documentStream.Write(existingDocumentBytes, 0, existingDocumentBytes.Length);
+                    documentStream.Position = 0; // Reset the position to the beginning
+                }
+                var TableExists = false;
+                // Open the document for editing
+                using (var document = WordprocessingDocument.Open(documentStream, true))
+                {
+                    var body = document.MainDocumentPart.Document.Body;
+
+                    // Check if the document body is null and create a new one if necessary
+                    if (body == null)
+                    {
+                        body = new Body();
+                        document.MainDocumentPart.Document.AppendChild(body);
+                    }
+                    var paragraphs = body.Descendants<Paragraph>();
+                    foreach (var paragraph in paragraphs)
+                    {
+                        if (paragraph.InnerText.Contains($"WSR of {model.TeamName} Team"))
+                        {
+                            OpenXmlElement nextElement = paragraph.NextSibling();
+
+                            // Check if the next element is a table
+                            if (nextElement is Table table)
+                            {
+                                // Remove the table
+                                table.Remove();
+                            }
+                            TableExists = true;
+                            AppendTibcoTable(body, paragraph, model, document.MainDocumentPart);
+                            break; // Exit after inserting the table
+                        }
+                    }
+
+                    // Append new content to the document
+                    if (!TableExists)
+                    {
+                        AppendTibcoTable(body, model, document.MainDocumentPart, model.TeamName);
+                    }
+                    //CloudSailors = "Done";
+
+                    // Save changes to the document
+                    document.MainDocumentPart.Document.Save();
+                }
+
+                // Reset the stream position and update session with the new document
+                documentStream.Position = 0;
+                var updatedDocumentBytes = documentStream.ToArray();
+                HttpContext.Session.Set(DocumentKey, updatedDocumentBytes); // Update the document in session
+
+                // Return a view or redirect as needed
+                return View("~/Views/Home/Index.cshtml");
+            }
+
+        }
+
+        private void AppendTibcoTable(Body body, Paragraph paragraph, Tibco model, MainDocumentPart mainPart)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            //No need to add heading again
+            /*// Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text("WSR of Cloud Sailors Team")));
+            body.AppendChild(tableHeading);*/
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)"REPSRV - DEV/QA/STG/PROD Domain"),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            /*// Append the paragraph to the document body
+            body.AppendChild(table);*/
+            paragraph.InsertAfterSelf(table);
+
+
+            //No PageBreak necessary here
+        }
+        private void AppendTibcoTable(Body body, Tibco model, MainDocumentPart mainPart, string heading)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            // Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text($"WSR of {heading} Team")));
+            body.AppendChild(tableHeading);
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)"REPSRV - DEV/QA/STG/PROD Domain"),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            // Append the paragraph to the document body
+            body.AppendChild(table);
+
+
+
+            // Insert the page break
+            Paragraph paraPageBreak = body.AppendChild(new Paragraph());
+            Run runPageBreak = paraPageBreak.AppendChild(new Run());
+            runPageBreak.AppendChild(new Break() { Type = BreakValues.Page });
+        }
+
+
+
+
+
+        // Generate WSR for Digital -L3
+
+        public IActionResult GenerateWSRDigitalL3(DigitalL3 model)
+        {
+            // Create a new MemoryStream for each request to avoid conflicts
+            using (var documentStream = new MemoryStream())
+            {
+                // Create a new document if it doesn't exist
+                if (!HttpContext.Session.TryGetValue(DocumentKey, out var existingDocumentBytes))
+                {
+                    // Create a new document and store it in session
+                    CreateNewDocument(documentStream);
+                    HttpContext.Session.Set(DocumentKey, documentStream.ToArray());
+                }
+                else
+                {
+                    // Load existing document from session
+                    documentStream.Write(existingDocumentBytes, 0, existingDocumentBytes.Length);
+                    documentStream.Position = 0; // Reset the position to the beginning
+                }
+                var TableExists = false;
+                // Open the document for editing
+                using (var document = WordprocessingDocument.Open(documentStream, true))
+                {
+                    var body = document.MainDocumentPart.Document.Body;
+
+                    // Check if the document body is null and create a new one if necessary
+                    if (body == null)
+                    {
+                        body = new Body();
+                        document.MainDocumentPart.Document.AppendChild(body);
+                    }
+                    var paragraphs = body.Descendants<Paragraph>();
+                    foreach (var paragraph in paragraphs)
+                    {
+                        if (paragraph.InnerText.Contains($"WSR of {model.TeamName} Team"))
+                        {
+                            OpenXmlElement nextElement = paragraph.NextSibling();
+
+                            // Check if the next element is a table
+                            if (nextElement is Table table)
+                            {
+                                // Remove the table
+                                table.Remove();
+                            }
+                            TableExists = true;
+                            AppendDigitalL3Table(body, paragraph, model, document.MainDocumentPart);
+                            break; // Exit after inserting the table
+                        }
+                    }
+
+                    // Append new content to the document
+                    if (!TableExists)
+                    {
+                        AppendDigitalL3Table(body, model, document.MainDocumentPart, model.TeamName);
+                    }
+                    //CloudSailors = "Done";
+
+                    // Save changes to the document
+                    document.MainDocumentPart.Document.Save();
+                }
+
+                // Reset the stream position and update session with the new document
+                documentStream.Position = 0;
+                var updatedDocumentBytes = documentStream.ToArray();
+                HttpContext.Session.Set(DocumentKey, updatedDocumentBytes); // Update the document in session
+
+                // Return a view or redirect as needed
+                return View("~/Views/Home/Index.cshtml");
+            }
+
+        }
+
+        private void AppendDigitalL3Table(Body body, Paragraph paragraph, DigitalL3 model, MainDocumentPart mainPart)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            //No need to add heading again
+            /*// Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text("WSR of Cloud Sailors Team")));
+            body.AppendChild(tableHeading);*/
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)"RISE Portal"),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            /*// Append the paragraph to the document body
+            body.AppendChild(table);*/
+            paragraph.InsertAfterSelf(table);
+
+
+            //No PageBreak necessary here
+        }
+        private void AppendDigitalL3Table(Body body, DigitalL3 model, MainDocumentPart mainPart, string heading)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            // Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text($"WSR of {heading} Team")));
+            body.AppendChild(tableHeading);
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)"RISE Portal"),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            // Append the paragraph to the document body
+            body.AppendChild(table);
+
+
+
+            // Insert the page break
+            Paragraph paraPageBreak = body.AppendChild(new Paragraph());
+            Run runPageBreak = paraPageBreak.AppendChild(new Run());
+            runPageBreak.AppendChild(new Break() { Type = BreakValues.Page });
+        }
+
+
+
+
+        // Generate WSR for Power platform
+
+        public IActionResult GenerateWSRPowerPlatform(PowerPlatform model)
+        {
+            // Create a new MemoryStream for each request to avoid conflicts
+            using (var documentStream = new MemoryStream())
+            {
+                // Create a new document if it doesn't exist
+                if (!HttpContext.Session.TryGetValue(DocumentKey, out var existingDocumentBytes))
+                {
+                    // Create a new document and store it in session
+                    CreateNewDocument(documentStream);
+                    HttpContext.Session.Set(DocumentKey, documentStream.ToArray());
+                }
+                else
+                {
+                    // Load existing document from session
+                    documentStream.Write(existingDocumentBytes, 0, existingDocumentBytes.Length);
+                    documentStream.Position = 0; // Reset the position to the beginning
+                }
+                var TableExists = false;
+                // Open the document for editing
+                using (var document = WordprocessingDocument.Open(documentStream, true))
+                {
+                    var body = document.MainDocumentPart.Document.Body;
+
+                    // Check if the document body is null and create a new one if necessary
+                    if (body == null)
+                    {
+                        body = new Body();
+                        document.MainDocumentPart.Document.AppendChild(body);
+                    }
+                    var paragraphs = body.Descendants<Paragraph>();
+                    foreach (var paragraph in paragraphs)
+                    {
+                        if (paragraph.InnerText.Contains($"WSR of {model.TeamName} Team"))
+                        {
+                            OpenXmlElement nextElement = paragraph.NextSibling();
+
+                            // Check if the next element is a table
+                            if (nextElement is Table table)
+                            {
+                                // Remove the table
+                                table.Remove();
+                            }
+                            TableExists = true;
+                            AppendPowerPlatformTable(body, paragraph, model, document.MainDocumentPart);
+                            break; // Exit after inserting the table
+                        }
+                    }
+
+                    // Append new content to the document
+                    if (!TableExists)
+                    {
+                        AppendPowerPlatformTable(body, model, document.MainDocumentPart, model.TeamName);
+                    }
+                    //CloudSailors = "Done";
+
+                    // Save changes to the document
+                    document.MainDocumentPart.Document.Save();
+                }
+
+                // Reset the stream position and update session with the new document
+                documentStream.Position = 0;
+                var updatedDocumentBytes = documentStream.ToArray();
+                HttpContext.Session.Set(DocumentKey, updatedDocumentBytes); // Update the document in session
+
+                // Return a view or redirect as needed
+                return View("~/Views/Home/Index.cshtml");
+            }
+
+        }
+
+        private void AppendPowerPlatformTable(Body body, Paragraph paragraph, PowerPlatform model, MainDocumentPart mainPart)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            //No need to add heading again
+            /*// Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text("WSR of Cloud Sailors Team")));
+            body.AppendChild(tableHeading);*/
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)"Team Power Rangers"),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            /*// Append the paragraph to the document body
+            body.AppendChild(table);*/
+            paragraph.InsertAfterSelf(table);
+
+
+            //No PageBreak necessary here
+        }
+        private void AppendPowerPlatformTable(Body body, PowerPlatform model, MainDocumentPart mainPart, string heading)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            // Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text($"WSR of {heading} Team")));
+            body.AppendChild(tableHeading);
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)"Team Power Rangers"),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            // Append the paragraph to the document body
+            body.AppendChild(table);
+
+
+
+            // Insert the page break
+            Paragraph paraPageBreak = body.AppendChild(new Paragraph());
+            Run runPageBreak = paraPageBreak.AppendChild(new Run());
+            runPageBreak.AppendChild(new Break() { Type = BreakValues.Page });
+        }
+
+
+
+
+        //Generate WSR for GIS
+
+        public IActionResult GenerateWSRGis(Gis model)
+        {
+            // Create a new MemoryStream for each request to avoid conflicts
+            using (var documentStream = new MemoryStream())
+            {
+                // Create a new document if it doesn't exist
+                if (!HttpContext.Session.TryGetValue(DocumentKey, out var existingDocumentBytes))
+                {
+                    // Create a new document and store it in session
+                    CreateNewDocument(documentStream);
+                    HttpContext.Session.Set(DocumentKey, documentStream.ToArray());
+                }
+                else
+                {
+                    // Load existing document from session
+                    documentStream.Write(existingDocumentBytes, 0, existingDocumentBytes.Length);
+                    documentStream.Position = 0; // Reset the position to the beginning
+                }
+                var TableExists = false;
+                // Open the document for editing
+                using (var document = WordprocessingDocument.Open(documentStream, true))
+                {
+                    var body = document.MainDocumentPart.Document.Body;
+
+                    // Check if the document body is null and create a new one if necessary
+                    if (body == null)
+                    {
+                        body = new Body();
+                        document.MainDocumentPart.Document.AppendChild(body);
+                    }
+                    var paragraphs = body.Descendants<Paragraph>();
+                    foreach (var paragraph in paragraphs)
+                    {
+                        if (paragraph.InnerText.Contains($"WSR of {model.TeamName} Team"))
+                        {
+                            OpenXmlElement nextElement = paragraph.NextSibling();
+
+                            // Check if the next element is a table
+                            if (nextElement is Table table)
+                            {
+                                // Remove the table
+                                table.Remove();
+                            }
+                            TableExists = true;
+                            AppendGisTable(body, paragraph, model, document.MainDocumentPart);
+                            break; // Exit after inserting the table
+                        }
+                    }
+
+                    // Append new content to the document
+                    if (!TableExists)
+                    {
+                        AppendGisTable(body, model, document.MainDocumentPart, model.TeamName);
+                    }
+                    //CloudSailors = "Done";
+
+                    // Save changes to the document
+                    document.MainDocumentPart.Document.Save();
+                }
+
+                // Reset the stream position and update session with the new document
+                documentStream.Position = 0;
+                var updatedDocumentBytes = documentStream.ToArray();
+                HttpContext.Session.Set(DocumentKey, updatedDocumentBytes); // Update the document in session
+
+                // Return a view or redirect as needed
+                return View("~/Views/Home/Index.cshtml");
+            }
+
+        }
+
+        private void AppendGisTable(Body body, Paragraph paragraph, Gis model, MainDocumentPart mainPart)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            //No need to add heading again
+            /*// Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text("WSR of Cloud Sailors Team")));
+            body.AppendChild(tableHeading);*/
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell($" Team {model.TeamName}"),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            /*// Append the paragraph to the document body
+            body.AppendChild(table);*/
+            paragraph.InsertAfterSelf(table);
+
+
+            //No PageBreak necessary here
+        }
+        private void AppendGisTable(Body body, Gis model, MainDocumentPart mainPart, string heading)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            // Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text($"WSR of {heading} Team")));
+            body.AppendChild(tableHeading);
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell($" Team {model.TeamName}"),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            // Append the paragraph to the document body
+            body.AppendChild(table);
+
+
+
+            // Insert the page break
+            Paragraph paraPageBreak = body.AppendChild(new Paragraph());
+            Run runPageBreak = paraPageBreak.AppendChild(new Run());
+            runPageBreak.AppendChild(new Break() { Type = BreakValues.Page });
+        }
+
+
+
+
+        // Generate WSR for CA PPM
+
+        public IActionResult GenerateWSRCappm(Cappm model)
+        {
+            // Create a new MemoryStream for each request to avoid conflicts
+            using (var documentStream = new MemoryStream())
+            {
+                // Create a new document if it doesn't exist
+                if (!HttpContext.Session.TryGetValue(DocumentKey, out var existingDocumentBytes))
+                {
+                    // Create a new document and store it in session
+                    CreateNewDocument(documentStream);
+                    HttpContext.Session.Set(DocumentKey, documentStream.ToArray());
+                }
+                else
+                {
+                    // Load existing document from session
+                    documentStream.Write(existingDocumentBytes, 0, existingDocumentBytes.Length);
+                    documentStream.Position = 0; // Reset the position to the beginning
+                }
+                var TableExists = false;
+                // Open the document for editing
+                using (var document = WordprocessingDocument.Open(documentStream, true))
+                {
+                    var body = document.MainDocumentPart.Document.Body;
+
+                    // Check if the document body is null and create a new one if necessary
+                    if (body == null)
+                    {
+                        body = new Body();
+                        document.MainDocumentPart.Document.AppendChild(body);
+                    }
+                    var paragraphs = body.Descendants<Paragraph>();
+                    foreach (var paragraph in paragraphs)
+                    {
+                        if (paragraph.InnerText.Contains($"WSR of {model.TeamName} - {model.SubTeamName} Team"))
+                        {
+                            OpenXmlElement nextElement = paragraph.NextSibling();
+
+                            // Check if the next element is a table
+                            if (nextElement is Table table)
+                            {
+                                // Remove the table
+                                table.Remove();
+                            }
+                            TableExists = true;
+                            AppendCappmTable(body, paragraph, model, document.MainDocumentPart);
+                            break; // Exit after inserting the table
+                        }
+                    }
+
+                    // Append new content to the document
+                    if (!TableExists)
+                    {
+                        AppendCappmTable(body, model, document.MainDocumentPart, model.TeamName);
+                    }
+                    //CloudSailors = "Done";
+
+                    // Save changes to the document
+                    document.MainDocumentPart.Document.Save();
+                }
+
+                // Reset the stream position and update session with the new document
+                documentStream.Position = 0;
+                var updatedDocumentBytes = documentStream.ToArray();
+                HttpContext.Session.Set(DocumentKey, updatedDocumentBytes); // Update the document in session
+
+                // Return a view or redirect as needed
+                return View("~/Views/Home/Index.cshtml");
+            }
+
+        }
+
+        private void AppendCappmTable(Body body, Paragraph paragraph, Cappm model, MainDocumentPart mainPart)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            //No need to add heading again
+            /*// Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text("WSR of Cloud Sailors Team")));
+            body.AppendChild(tableHeading);*/
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)model.SubTeamName),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            /*// Append the paragraph to the document body
+            body.AppendChild(table);*/
+            paragraph.InsertAfterSelf(table);
+
+
+            //No PageBreak necessary here
+        }
+        private void AppendCappmTable(Body body, Cappm model, MainDocumentPart mainPart, string heading)
+        {
+            // Create a new paragraph with the provided text
+            //var paragraph = new Paragraph(new Run(new Text(text)));
+            ViewBag.Status = model.Status;
+            ViewBag.Risks = model.Risks;
+
+
+            HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+            var formtext1 = htmlconverter.Parse(model.Description);
+            var formtext2 = htmlconverter.Parse(model.Accomplishments);
+
+            // Add heading above the table
+            var tableHeading = new Paragraph(new Run(new RunProperties(new Bold()), new Text($"WSR of {heading} - {model.SubTeamName} Team")));
+            body.AppendChild(tableHeading);
+
+
+            // Create and add a table
+            var table = new Table();
+            // Table properties
+            var tblProperties = new TableProperties(
+                 new TableBorders(
+                     new TopBorder { Val = BorderValues.Single, Size = 6 },
+                     new BottomBorder { Val = BorderValues.Single, Size = 6 },
+                     new LeftBorder { Val = BorderValues.Single, Size = 6 },
+                     new RightBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideHorizontalBorder { Val = BorderValues.Single, Size = 6 },
+                     new InsideVerticalBorder { Val = BorderValues.Single, Size = 6 }
+                 ),
+                 new TableWidth { Width = "0", Type = TableWidthUnitValues.Auto }
+             );
+            table.Append(tblProperties);
+
+            /* HtmlConverter htmlconverter = new HtmlConverter(mainPart);
+             var formtext1 = htmlconverter.Parse(model.Description);
+             var formtext2 = htmlconverter.Parse(model.Accomplishments);*/
+
+            // Add header row
+            var headerRow = new TableRow();
+            headerRow.Append(
+                CreateBoldCell("Program Name"),
+                CreateBoldCell("Description"),
+                CreateBoldCell("Status"),
+                CreateBoldCell("RAG"),
+                CreateBoldCell("Risks"),
+                CreateBoldCell("Accomplishments"),
+                CreateBoldCell("Closure Date"),
+                CreateBoldCell("Project type")
+            );
+            table.Append(headerRow);
+
+            // Add data row
+            var dataRow = new TableRow();
+            dataRow.Append(
+                CreateTableCell((string)model.SubTeamName),
+                CreateTestCell(formtext1),
+                CreateTableCell(ViewBag.Status ?? "N/A"),
+                CreateTableCell(GetRagDot(model.Status ?? "Unknown")), // Static value
+                CreateTableCell(ViewBag.Risks),
+                CreateTestCell(formtext2),
+                CreateTableCell(model.ClosureDate),
+                CreateTableCell(model.ProjectType)
+            ); ;
+            table.Append(dataRow);
+
+            // Append the table to the body
+            //mainPart.Document.Body.Append(table);
+
+
+
+
+            // Append the paragraph to the document body
+            body.AppendChild(table);
+
+
+
+            // Insert the page break
+            Paragraph paraPageBreak = body.AppendChild(new Paragraph());
+            Run runPageBreak = paraPageBreak.AppendChild(new Run());
+            runPageBreak.AppendChild(new Break() { Type = BreakValues.Page });
+        }
+
+
+
 
         //generating document for digital support team
 

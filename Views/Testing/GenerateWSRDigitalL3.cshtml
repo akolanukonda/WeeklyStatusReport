@@ -1,22 +1,42 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿
+
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-@model WeeklyStatusReport.Models.CloudSailorsTeam
+
+@model WeeklyStatusReport.Models.DigitalL3
 @{
-    ViewBag.Title = "CloudSailors";
+    ViewBag.Title = "Digital - L3";
 }
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
+    table, th, td {
+        border: 1px solid black;
+    }
 
+    th, td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    td input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+</style>
 <h2>@ViewBag.Title Team Details</h2>
 
-
-
 @* @using (Html.BeginForm("Submit", "CloudSailors", FormMethod.Post)) *@
-@using (Html.BeginForm("GenerateWSRCloudSailors", "Testing", FormMethod.Post))
+@using (Html.BeginForm("GenerateWSRDigitalL3", "Testing", FormMethod.Post))
 {
-    
+
     <div class="form-group">
         @if (ViewBag.SelectedTeam != null)
         {
@@ -26,7 +46,7 @@
     </div>
     <div class="form-group">
         @Html.Label("Week:")
-        <input type="week"  name="week" class="form-control" placeholder="Select a week" />
+        <input type="week" name="week" class="form-control" placeholder="Select a week" />
     </div>
 
     <div class="form-group">
@@ -58,7 +78,7 @@
 
     <div class="form-group">
         @Html.Label("Risks:")
-        @Html.DropDownList("Risks", new SelectList(new[] { "Yes", "No" }), "Select Risks", new { @class = "form-control"})
+        @Html.DropDownList("Risks", new SelectList(new[] { "Yes", "No" }), "Select Risks", new { @class = "form-control" })
     </div>
 
     <div class="form-group">
@@ -72,7 +92,7 @@
                 theme: 'snow'
             });
 
-            
+
         </script>
 
     </div>
@@ -88,9 +108,31 @@
         @Html.Label("Project Type:")
         @Html.TextBox("projectType", null, new { @class = "form-control" })
     </div>
+    <br />
+    <div class="form-group">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>SN Groups</th>
+                    <th>Assigned this week</th>
+                    <th>Closed this week</th>
+                    <th>Carry Forward</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@ViewBag.SelectedTeam</td>
+                    <td><input type="number" name="Assigned" required /></td>
+                    <td><input type="number" name="Closed" required /></td>
+                    <td><input type="number" name="CarryForward" required /></td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
 
     <button type="submit" class="btn btn-primary" onclick="submitForm()">Submit</button>
-    
+
 }
 
 @if (ViewBag.Message != null)
@@ -99,3 +141,4 @@
         @ViewBag.Message
     </div>
 }
+

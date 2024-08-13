@@ -1,22 +1,22 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿
+
+
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-@model WeeklyStatusReport.Models.CloudSailorsTeam
+
+
+@model WeeklyStatusReport.Models.DigitalTeam;
 @{
-    ViewBag.Title = "CloudSailors";
+    ViewBag.Title = "Digital";
 }
 
 
 <h2>@ViewBag.Title Team Details</h2>
 
-
-
 @* @using (Html.BeginForm("Submit", "CloudSailors", FormMethod.Post)) *@
-@using (Html.BeginForm("GenerateWSRCloudSailors", "Testing", FormMethod.Post))
+@using (Html.BeginForm("GenerateWSRDgital", "Testing", FormMethod.Post))
 {
-    
+
     <div class="form-group">
         @if (ViewBag.SelectedTeam != null)
         {
@@ -25,8 +25,12 @@
         }
     </div>
     <div class="form-group">
+        @Html.Label("Select Team:")
+        @Html.DropDownList("SubTeamName", new SelectList(new[] { "Team Aura", "Team Garbage Gladiators", "Trash Bandicoot",  }), "Select a team", new { @class = "form-control", required = "required" })
+    </div>
+    <div class="form-group">
         @Html.Label("Week:")
-        <input type="week"  name="week" class="form-control" placeholder="Select a week" />
+        <input type="week" name="week" class="form-control" placeholder="Select a week" />
     </div>
 
     <div class="form-group">
@@ -58,7 +62,7 @@
 
     <div class="form-group">
         @Html.Label("Risks:")
-        @Html.DropDownList("Risks", new SelectList(new[] { "Yes", "No" }), "Select Risks", new { @class = "form-control"})
+        @Html.DropDownList("Risks", new SelectList(new[] { "Yes", "No" }), "Select Risks", new { @class = "form-control" })
     </div>
 
     <div class="form-group">
@@ -72,7 +76,7 @@
                 theme: 'snow'
             });
 
-            
+
         </script>
 
     </div>
@@ -90,7 +94,7 @@
     </div>
 
     <button type="submit" class="btn btn-primary" onclick="submitForm()">Submit</button>
-    
+
 }
 
 @if (ViewBag.Message != null)
@@ -99,3 +103,5 @@
         @ViewBag.Message
     </div>
 }
+
+
