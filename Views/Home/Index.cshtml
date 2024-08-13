@@ -1,0 +1,31 @@
+﻿@model WeeklyStatusReport.Models.TeamSelection
+@{
+    ViewData["Title"] = "Select a Team";
+}
+
+<h2>Select a Team</h2>
+
+@using (Html.BeginForm("Submit", "Home", FormMethod.Post))
+{
+    <div>
+        @Html.Label("Select Team:")
+        @Html.DropDownList("SelectedTeam", new SelectList(new[] { "Cloud Sailors", "Digital Support","Digital","Tibco","Digital - L3","Power Platform","GIS","CA PPM" }), "Select a team", new { @class = "form-control" })
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Submit</button>
+}
+
+
+@using (Html.BeginForm("DownloadDocument", "Testing", FormMethod.Get))
+{
+   
+    <button type="submit" class="btn btn-primary">Download document</button>
+}
+
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-info">
+        @ViewBag.Message
+    </div>
+}

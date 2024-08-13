@@ -1,0 +1,125 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model WeeklyStatusReport.Models.DigitalSupportTeam
+@{
+    ViewBag.Title = "DigitalSupport";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tickets Form</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tickets Entry Form</h1>
+    <form method="post" action="/Testing/GenerateWSRDigitalSupport">
+        <table>
+            <thead>
+                <tr>
+                    <th>SN Groups</th>
+                    <th>Assigned this week</th>
+                    <th>Closed this week</th>
+                    <th>Carry Forward</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Sharepoint</td>
+                    <td><input type="number" name="Sharepoint_Assigned" required /></td>
+                    <td><input type="number" name="Sharepoint_Closed" required /></td>
+                    <td><input type="number" name="Sharepoint_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>Digital- My Resource\Dragonboat</td>
+                    <td><input type="number" name="Digital_MyResource_Assigned" required /></td>
+                    <td><input type="number" name="Digital_MyResource_Closed" required /></td>
+                    <td><input type="number" name="Digital_MyResource_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>Digital- Dot.com\E-Commerce</td>
+                    <td><input type="number" name="Digital_Dotcom_Assigned" required /></td>
+                    <td><input type="number" name="Digital_Dotcom_Closed" required /></td>
+                    <td><input type="number" name="Digital_Dotcom_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>Compass</td>
+                    <td><input type="number" name="Compass_Assigned" required /></td>
+                    <td><input type="number" name="Compass_Closed" required /></td>
+                    <td><input type="number" name="Compass_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>Doc Locator</td>
+                    <td><input type="number" name="DocLocator_Assigned" required /></td>
+                    <td><input type="number" name="DocLocator_Closed" required /></td>
+                    <td><input type="number" name="DocLocator_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>CFirst\IDS</td>
+                    <td><input type="number" name="CFirst_IDS_Assigned" required /></td>
+                    <td><input type="number" name="CFirst_IDS_Closed" required /></td>
+                    <td><input type="number" name="CFirst_IDS_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>NA Portal</td>
+                    <td><input type="number" name="NAPortal_Assigned" required /></td>
+                    <td><input type="number" name="NAPortal_Closed" required /></td>
+                    <td><input type="number" name="NAPortal_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>Microsites\Others</td>
+                    <td><input type="number" name="Microsites_Others_Assigned" required /></td>
+                    <td><input type="number" name="Microsites_Others_Closed" required /></td>
+                    <td><input type="number" name="Microsites_Others_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>ACN</td>
+                    <td><input type="number" name="ACN_Assigned" required /></td>
+                    <td><input type="number" name="ACN_Closed" required /></td>
+                    <td><input type="number" name="ACN_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>Adhoc</td>
+                    <td><input type="number" name="Adhoc_Assigned" required /></td>
+                    <td><input type="number" name="Adhoc_Closed" required /></td>
+                    <td><input type="number" name="Adhoc_CarryForward" required /></td>
+                </tr>
+                <tr>
+                    <td>Urgent</td>
+                    <td colspan="3"><input type="number" name="Urgent" /></td>
+                </tr>
+                <tr>
+                    <td>High Priority Tickets</td>
+                    <td colspan="3"><input type="number" name="HighPriorityTickets" /></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

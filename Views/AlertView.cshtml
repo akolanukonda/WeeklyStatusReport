@@ -1,0 +1,17 @@
+﻿@if (TempData["AlertMessage"] != null)
+{
+    <script>
+        alert('@TempData["AlertMessage"]');
+        window.location.href='@Url.Action("Index","Home")'
+    </script>
+} 
+
+
+@* <h2>@ViewBag.SelectedTeam Edit Team Details</h2>
+
+@using (Html.BeginForm("Submit", "Testing", FormMethod.Post))
+{
+
+    <h4>Team Name: <input type="text" value="@ViewBag.SelectedTeam" readonly class="form-control" /></h4>
+    <button type="submit" class="btn btn-primary">Edit</button>
+} *@
